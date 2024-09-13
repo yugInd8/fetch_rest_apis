@@ -46,40 +46,41 @@ class APIFetcher(ABC):
 class PaginatedFetcher(APIFetcher):
     def fetch_data(self, page_param='page', per_page=100, data_key=None):
         """
-        Fetch paginated data from the API.
+        General pagination logic for any REST API. Keeps fetching pages until no more data is returned.
         
-        :param page_param: The parameter for pagination (e.g., 'page').
+        :param page_param: The parameter name for the page number.
         :param per_page: The number of items per page.
-        :param data_key: The key in the response where data is located (optional).
-                         If None, it assumes the data is the top-level response.
-        :return: List of data items.
+        :param data_key: Optional key to specify where the actual data is in the response.
+                         If None, the response itself is assumed to be the data.
+        :return: A list of all fetched data across multiple pages.
         """
         data = []
         page = 1
         while True:
             params = {page_param: page, 'per_page': per_page}
             response = self.make_request(params)
-            if not response:
-                break
             
-            # If there's a data_key, get the data from the nested key, otherwise, assume response is the data
+            if not response:  # Stop if no response
+                break
+
+            # If there's a specific data_key, use it; otherwise, assume the entire response is the data
             if data_key and data_key in response:
                 fetched_data = response[data_key]
             else:
-                fetched_data = response  # Assume the response is the data if no data_key
+                fetched_data = response  # Assume the full response is the data
             
-            if not fetched_data:
+            if not fetched_data:  # Stop if no data is returned in the current page
                 break
 
             data.extend(fetched_data)
 
-            # Check if there's a next page (some APIs have 'next_page' or similar indicators)
+            # If fewer than per_page items are returned, assume this is the last page
             if len(fetched_data) < per_page:
-                break  # If fetched less than expected, it's the last page
-            page += 1
+                break
+
+            page += 1  # Move to the next page
 
         return data
-
 
 class OffsetBasedFetcher(APIFetcher):
     def fetch_data(self, offset_param='offset', limit=100):

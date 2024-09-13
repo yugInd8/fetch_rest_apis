@@ -4,5 +4,7 @@ rext/
 #example output from fetch1 for countries api
 output_countries_api.csv
 
-#testfetch_simple 's output 
+#test outputs 
 output_simple.csv
+output_paginated_new.csv
+output_starwars_paginated.csv
