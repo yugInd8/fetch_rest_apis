@@ -8,3 +8,5 @@ output_countries_api.csv
 output_simple.csv
 output_paginated_new.csv
 output_starwars_paginated.csv
+output_pokemon_offset.csv
+output_posts_offset.csv

@@ -83,18 +83,48 @@ class PaginatedFetcher(APIFetcher):
         return data
 
 class OffsetBasedFetcher(APIFetcher):
-    def fetch_data(self, offset_param='offset', limit=100):
+    def fetch_data(self, offset_param='offset', limit_param='limit', limit=100, data_key=None):
+        """
+        General offset-based pagination logic for any REST API.
+        
+        :param offset_param: The parameter name for the offset (default is 'offset').
+        :param limit_param: The parameter name for the limit (default is 'limit').
+        :param limit: The number of items to fetch per page.
+        :param data_key: Optional key to specify where the actual data is in the response.
+                         If None, the response itself is assumed to be the data.
+        :return: A list of all fetched data across multiple pages.
+        """
         data = []
         offset = 0
+        
         while True:
-            params = {offset_param: offset, 'limit': limit}
+            params = {offset_param: offset, limit_param: limit}
+            logging.info(f"Fetching data with params: {params}")
             response = self.make_request(params)
-            if not response or 'data' not in response:
+            
+            if not response:  # Stop if no response
+                logging.info("No response received.")
                 break
-            data.extend(response['data'])
-            if len(response['data']) < limit:
+
+            # If there's a specific data_key, use it; otherwise, assume the entire response is the data
+            if data_key and data_key in response:
+                fetched_data = response[data_key]
+            else:
+                fetched_data = response  # Assume the full response is the data
+
+            if not fetched_data:  # Stop if no data is returned
+                logging.info("No data fetched.")
                 break
-            offset += limit
+
+            data.extend(fetched_data)
+
+            # Stop if fewer than the limit amount is returned
+            if len(fetched_data) < limit:
+                logging.info(f"End of data reached. Fetched {len(fetched_data)} items.")
+                break
+
+            offset += limit  # Move to the next offset
+
         return data
 
 class CursorBasedFetcher(APIFetcher):
