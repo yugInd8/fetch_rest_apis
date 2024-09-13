@@ -3,3 +3,6 @@ rext/
 
 #example output from fetch1 for countries api
 output_countries_api.csv
+
+#testfetch_simple 's output 
+output_simple.csv
