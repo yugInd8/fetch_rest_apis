@@ -1,2 +1,5 @@
 #virtal env 
 rext/
+
+#example output from fetch1 for countries api
+output_countries_api.csv
